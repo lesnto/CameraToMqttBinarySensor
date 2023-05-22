@@ -17,7 +17,7 @@ def on_connect(client, userdata, flags, rc):
 
 Connected = False  # global variable for the state of the connection
 item = 0
-item1 = "ON"
+item1 = "close"
 broker_address = "192.168.0.119"
 port = 1883
 user = "homeswitch"
@@ -49,7 +49,6 @@ while Connected != True:  # Wait for connection
 try:
     while True:
 
-
         # ////////////////////////////
         ContoursSum = 0
 
@@ -67,7 +66,7 @@ try:
                 break
 
         brama1 = frame1[149:300, 600:1150]
-        # cv2.imshow('window_name1', brama1)
+        #cv2.imshow('window_name1', brama1)
 
         GateOpen = brama1
         GateOpen = cv2.GaussianBlur(src=GateOpen, ksize=(5, 5), sigmaX=0)
@@ -96,7 +95,7 @@ try:
             if SureFactor > 3:
                 SureFactor = 0
                 notification.notify("Brama", "Zamkieta")
-                client.publish(topic="home-assistant/binary_sensor/Gate/state", payload=str('close'), qos=0, retain=False)
+                item1 = 'closed'
                 statusOpen = True
                 statusClosed = False
                 print('Zamknieta: ' + str(ContoursSum))
@@ -107,7 +106,7 @@ try:
             if SureFactor < -3:
                 SureFactor = 0
                 notification.notify("Brama", "Otwarta")
-                client.publish(topic="home-assistant/binary_sensor/Gate/state", payload=str('open'), qos=0, retain=False)
+                item1 = 'open'
                 statusOpen = False
                 statusClosed = True
                 print('Otwarta: ' + str(ContoursSum))
@@ -127,12 +126,9 @@ try:
                 print('Remains in position Open: ' + str(ContoursSum) + 'Factor: ' + str(SureFactor))
                 time.sleep(5)
 
-        #////////////////////////////
-
-
-        time.sleep(15)
+        client.publish(topic="home-assistant/binary_sensor/Gate/state", payload=str(item1), qos=0, retain=False)
+        time.sleep(7)
 
 except KeyboardInterrupt:
-
     client.disconnect()
     client.loop_stop()
